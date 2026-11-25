@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <!-- تنظیمات viewport برای واکنش‌گرایی روی موبایل -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0e1a" />
+  <meta name="description" content="آزمایشگاه مجازی تعاملی DNA - نمایش سه‌بعدی مارپیچ دوگانه با Three.js" />
+  <title>DNA LAB - آزمایشگاه تعاملی DNA</title>
+
+  <!-- فونت فارسی وازیرمتن -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;900&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- نقشه ایمپورت Three.js به صورت ES Module (سازگار با GitHub Pages) -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div class="app">
+    <!-- ===== هدر ===== -->
+    <header class="app-header">
+      <h1 class="app-title">DNA LAB</h1>
+      <p class="app-subtitle">آزمایشگاه مجازی تعاملی ساختار DNA</p>
+    </header>
+
+    <main class="app-main">
+      <!-- ===== نمایشگر شبیه مانیتور کامپیوتر ===== -->
+      <section class="monitor" aria-label="نمایشگر سه‌بعدی DNA">
+        <div class="monitor-frame">
+          <div class="monitor-bezel">
+            <div class="monitor-screen">
+              <!-- بوم رندر Three.js -->
+              <canvas id="dna-canvas"></canvas>
+
+              <!-- نشانگر وضعیت (LED مانیتور) -->
+              <div class="monitor-led" title="مانیتور روشن"></div>
+
+              <!-- اطلاعات روی صفحه -->
+              <div class="stats-overlay">
+                <div class="stat-card">
+                  <span class="stat-label">تعداد بازها</span>
+                  <span class="stat-value" id="base-count">0</span>
+                </div>
+                <div class="stat-card">
+                  <span class="stat-label">درصد GC</span>
+                  <span class="stat-value" id="gc-percent">0٪</span>
+                </div>
+              </div>
+
+              <!-- راهنمای رنگ بازها -->
+              <div class="legend-overlay">
+                <div class="legend-item"><span class="dot dot-a"></span>A</div>
+                <div class="legend-item"><span class="dot dot-t"></span>T</div>
+                <div class="legend-item"><span class="dot dot-g"></span>G</div>
+                <div class="legend-item"><span class="dot dot-c"></span>C</div>
+              </div>
+
+              <!-- پیام بارگذاری -->
+              <div class="loading" id="loading">در حال بارگذاری نمایشگر…</div>
+            </div>
+          </div>
+          <!-- پایه مانیتور (فقط روی دسکتاپ) -->
+          <div class="monitor-stand" aria-hidden="true">
+            <div class="stand-neck"></div>
+            <div class="stand-base"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== بخش کنترل‌ها ===== -->
+      <section class="controls" aria-label="کنترل‌های ورودی DNA">
+        <!-- کادر ورودی توالی -->
+        <div class="input-section">
+          <label for="dna-input" class="input-label">توالی DNA را وارد کنید (فقط A, T, G, C)</label>
+          <input
+            type="text"
+            id="dna-input"
+            class="dna-input"
+            placeholder="ATGCGATCGATC..."
+            maxlength="60"
+            autocomplete="off"
+            autocapitalize="characters"
+            spellcheck="false"
+            inputmode="text"
+            dir="ltr"
+          />
+        </div>
+
+        <!-- دکمه‌های سریع بازها -->
+        <div class="quick-buttons" role="group" aria-label="دکمه‌های سریع بازها">
+          <button type="button" class="base-btn base-a" data-base="A">A</button>
+          <button type="button" class="base-btn base-t" data-base="T">T</button>
+          <button type="button" class="base-btn base-g" data-base="G">G</button>
+          <button type="button" class="base-btn base-c" data-base="C">C</button>
+        </div>
+
+        <!-- دکمه‌های عملیاتی -->
+        <div class="action-buttons">
+          <button type="button" id="toggle-rotation" class="action-btn">
+            <span class="btn-icon">⏸</span>
+            <span class="btn-text">توقف چرخش</span>
+          </button>
+          <button type="button" id="clear-sequence" class="action-btn action-danger">
+            <span class="btn-icon">🗑</span>
+            <span class="btn-text">پاک کردن</span>
+          </button>
+        </div>
+
+        <!-- پنل اطلاعات رشته‌ها -->
+        <div class="info-panel">
+          <div class="info-row">
+            <span class="info-label">رشته اصلی</span>
+            <span class="info-value" id="main-strand" dir="ltr">—</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">رشته مکمل</span>
+            <span class="info-value info-complement" id="complement-strand" dir="ltr">—</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ===== فوتر ===== -->
+    <footer class="app-footer">
+      <p>DNA LAB &copy; 2026 — ساخته‌شده با Three.js</p>
+    </footer>
+  </div>
+
+  <!-- اسکریپت اصلی به عنوان ES Module -->
+  <script type="module" src="script.js"></script>
+</body>
+</html>

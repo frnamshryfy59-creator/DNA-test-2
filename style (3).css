@@ -1,0 +1,545 @@
+/* ============================================
+   DNA LAB - استایل اصلی
+   تم: تیره، علمی، با نورهای آبی/فیروزه‌ای/بنفش
+   ============================================ */
+
+/* ===== ریست و متغیرهای پایه ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent; /* جلوگیری از فلش آبی روی موبایل */
+}
+
+:root {
+  /* رنگ‌های پس‌زمینه و تم */
+  --bg-dark: #0a0e1a;
+  --bg-darker: #050810;
+  --bg-panel: rgba(15, 19, 32, 0.75);
+
+  /* رنگ‌های اصلی */
+  --primary: #14b8a6;      /* فیروزه‌ای */
+  --secondary: #3b82f6;   /* آبی */
+  --accent: #a855f7;      /* بنفش */
+
+  /* رنگ‌های بازها (هماهنگ با Three.js) */
+  --color-a: #3b82f6;      /* آبی - آدنین */
+  --color-t: #a855f7;      /* بنفش - تیمین */
+  --color-g: #14b8a6;      /* فیروزه‌ای - گوانین */
+  --color-c: #f59e0b;      /* کهربایی - سیتوزین */
+
+  /* متن */
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+
+  /* خطوط و نور */
+  --border: rgba(20, 184, 166, 0.25);
+  --border-strong: rgba(20, 184, 166, 0.5);
+  --glow: rgba(20, 184, 166, 0.35);
+
+  /* اندازه‌ها */
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+/* ===== بدنه صفحه ===== */
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg-dark);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.6;
+  /* نورهای پس‌زمینه ملایم */
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(59, 130, 246, 0.12), transparent 45%),
+    radial-gradient(circle at 85% 75%, rgba(168, 85, 247, 0.12), transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(20, 184, 166, 0.08), transparent 60%);
+  background-attachment: fixed;
+}
+
+/* ===== کانتینر اصلی ===== */
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ===== هدر ===== */
+.app-header {
+  text-align: center;
+  padding: 12px 0 6px;
+}
+
+.app-title {
+  font-size: clamp(1.8rem, 6vw, 3rem);
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 3px;
+  text-shadow: 0 0 40px rgba(20, 184, 166, 0.3);
+  margin-bottom: 2px;
+}
+
+.app-subtitle {
+  color: var(--text-muted);
+  font-size: clamp(0.75rem, 3vw, 0.95rem);
+  font-weight: 400;
+}
+
+/* ===== بخش اصلی ===== */
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 10px;
+}
+
+/* ============================================
+   نمایشگر (مانیتور کامپیوتر)
+   ============================================ */
+.monitor {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  perspective: 1000px;
+}
+
+.monitor-frame {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* قاب بیرونی مانیتور */
+.monitor-bezel {
+  width: 100%;
+  background: linear-gradient(145deg, #1a1f2e 0%, #0d111c 100%);
+  border-radius: 16px;
+  padding: 10px;
+  box-shadow:
+    0 0 50px rgba(20, 184, 166, 0.15),
+    0 12px 30px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  position: relative;
+}
+
+/* صفحه نمایش */
+.monitor-screen {
+  position: relative;
+  background: radial-gradient(ellipse at center, #060912 0%, #000 100%);
+  border-radius: 8px;
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  border: 1px solid rgba(20, 184, 166, 0.15);
+  box-shadow:
+    inset 0 0 30px rgba(20, 184, 166, 0.1),
+    inset 0 0 60px rgba(0, 0, 0, 0.5);
+}
+
+/* بوم رندر */
+#dna-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none; /* مهم: جلوگیری از تداخل لمس مرورگر با OrbitControls */
+}
+
+/* LED نشانگر روشن بودن مانیتور */
+.monitor-led {
+  position: absolute;
+  bottom: 6px;
+  left: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 8px var(--primary);
+  animation: led-pulse 2s ease-in-out infinite;
+}
+
+@keyframes led-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* اطلاعات آماری روی صفحه */
+.stats-overlay {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.stat-card {
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 85px;
+}
+
+.stat-label {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.stat-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-shadow: 0 0 12px rgba(20, 184, 166, 0.5);
+  font-family: 'Courier New', monospace;
+}
+
+/* راهنمای رنگ بازها */
+.legend-overlay {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font-size: 0.7rem;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.dot-a { background: var(--color-a); box-shadow: 0 0 6px var(--color-a); }
+.dot-t { background: var(--color-t); box-shadow: 0 0 6px var(--color-t); }
+.dot-g { background: var(--color-g); box-shadow: 0 0 6px var(--color-g); }
+.dot-c { background: var(--color-c); box-shadow: 0 0 6px var(--color-c); }
+
+/* پیام بارگذاری */
+.loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--primary);
+  font-size: 0.9rem;
+  text-shadow: 0 0 10px rgba(20, 184, 166, 0.5);
+}
+
+/* پایه مانیتور */
+.monitor-stand {
+  margin-top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stand-neck {
+  width: 30px;
+  height: 18px;
+  background: linear-gradient(180deg, #1a1f2e, #0d111c);
+  margin-top: -2px;
+}
+
+.stand-base {
+  width: 140px;
+  height: 8px;
+  background: linear-gradient(180deg, #1a1f2e, #0d111c);
+  border-radius: 4px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+}
+
+/* ============================================
+   بخش کنترل‌ها
+   ============================================ */
+.controls {
+  background: var(--bg-panel);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* بخش ورودی */
+.input-section {
+  margin-bottom: 14px;
+}
+
+.input-label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.dna-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--primary);
+  font-family: 'Courier New', monospace;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-align: center;
+  text-transform: uppercase;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.dna-input::placeholder {
+  color: var(--text-dim);
+  font-weight: 400;
+  letter-spacing: 1px;
+}
+
+.dna-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 20px rgba(20, 184, 166, 0.25), inset 0 0 10px rgba(20, 184, 166, 0.05);
+}
+
+/* دکمه‌های سریع بازها */
+.quick-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 2px; /* جلوگیری از برش سایه‌ها در لبه */
+  overflow: visible;
+}
+
+.base-btn {
+  padding: 14px 0;
+  font-size: 1.2rem;
+  font-weight: 900;
+  font-family: 'Courier New', monospace;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  transition: transform 0.1s, filter 0.2s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.base-a { background: linear-gradient(135deg, #1e40af, #3b82f6); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+.base-t { background: linear-gradient(135deg, #6b21a8, #a855f7); box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3); }
+.base-g { background: linear-gradient(135deg, #0f766e, #14b8a6); box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3); }
+.base-c { background: linear-gradient(135deg, #b45309, #f59e0b); box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); }
+
+.base-btn:active {
+  transform: scale(0.94);
+  filter: brightness(1.15);
+}
+
+/* دکمه‌های عملیاتی */
+.action-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.action-btn {
+  padding: 11px 14px;
+  background: rgba(20, 184, 166, 0.1);
+  border: 1px solid var(--border);
+  color: var(--primary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: background 0.2s, border-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.action-btn:hover {
+  background: rgba(20, 184, 166, 0.18);
+  border-color: var(--border-strong);
+}
+
+.action-btn:active {
+  background: rgba(20, 184, 166, 0.25);
+}
+
+.action-btn .btn-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.action-danger {
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.25);
+  background: rgba(248, 113, 113, 0.08);
+}
+
+.action-danger:hover {
+  background: rgba(248, 113, 113, 0.15);
+  border-color: rgba(248, 113, 113, 0.4);
+}
+
+/* پنل اطلاعات رشته‌ها */
+.info-panel {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+}
+
+.info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  flex-shrink: 0;
+  width: 85px;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  padding-top: 2px;
+}
+
+.info-value {
+  font-family: 'Courier New', monospace;
+  color: var(--primary);
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  word-break: break-all;
+  font-size: 0.92rem;
+  flex: 1;
+  text-shadow: 0 0 8px rgba(20, 184, 166, 0.3);
+}
+
+.info-complement {
+  color: var(--accent);
+  text-shadow: 0 0 8px rgba(168, 85, 247, 0.3);
+}
+
+/* ===== فوتر ===== */
+.app-footer {
+  text-align: center;
+  padding: 18px 0 8px;
+  color: var(--text-dim);
+  font-size: 0.78rem;
+}
+
+/* ============================================
+   واکنش‌گرایی (Responsive)
+   ============================================ */
+
+/* تبلت و موبایل بزرگ */
+@media (max-width: 768px) {
+  .app { padding: 10px 12px; }
+  .monitor-bezel { padding: 8px; border-radius: 12px; }
+  .monitor-screen { aspect-ratio: 4 / 3; } /* کمی بلندتر برای دید بهتر DNA */
+  .monitor-stand { display: none; } /* پایه روی موبایل مخفی */
+
+  .stats-overlay { top: 8px; right: 8px; gap: 6px; }
+  .stat-card { padding: 5px 9px; min-width: 70px; }
+  .stat-label { font-size: 0.62rem; }
+  .stat-value { font-size: 1rem; }
+
+  .legend-overlay { top: 8px; left: 8px; padding: 6px 8px; font-size: 0.62rem; }
+  .dot { width: 8px; height: 8px; }
+
+  .controls { padding: 14px; }
+  .base-btn { padding: 13px 0; font-size: 1.05rem; }
+  .info-label { width: 75px; font-size: 0.78rem; }
+}
+
+/* موبایل کوچک */
+@media (max-width: 480px) {
+  .app { padding: 8px 8px; }
+  .app-header { padding: 8px 0 4px; }
+  .monitor-bezel { padding: 6px; }
+  .monitor-screen { aspect-ratio: 1 / 1; border-radius: 6px; }
+
+  .stat-card { padding: 4px 7px; min-width: 60px; }
+  .stat-label { font-size: 0.58rem; }
+  .stat-value { font-size: 0.88rem; }
+
+  .legend-overlay { font-size: 0.55rem; padding: 5px 6px; }
+  .legend-item { gap: 4px; }
+  .dot { width: 7px; height: 7px; }
+
+  .controls { padding: 12px; border-radius: 10px; }
+  .quick-buttons { gap: 6px; }
+  .base-btn { padding: 12px 0; font-size: 1rem; border-radius: 6px; }
+  .action-btn { padding: 10px 8px; font-size: 0.82rem; }
+  .action-btn .btn-text { font-size: 0.82rem; }
+
+  .dna-input { padding: 10px 12px; font-size: 0.95rem; }
+  .info-label { width: 68px; }
+  .info-value { font-size: 0.82rem; letter-spacing: 1px; }
+}
+
+/* حالت لنداسکیپ موبایل */
+@media (max-height: 500px) and (orientation: landscape) {
+  .monitor-screen { aspect-ratio: 16 / 9; }
+  .app-header { padding: 4px 0; }
+  .app-title { font-size: 1.4rem; }
+  .app-subtitle { display: none; }
+}
+
+/* کاهش انیمیشن برای کاربرانی که ترجیح می‌دهند */
+@media (prefers-reduced-motion: reduce) {
+  .monitor-led { animation: none; }
+  * { transition: none !important; }
+}
